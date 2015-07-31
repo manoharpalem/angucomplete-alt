@@ -40,6 +40,9 @@
     var PAUSE = 500;
     var BLUR_TIMEOUT = 200;
 
+    var ROW_HEIGHT = 41;// in pixels
+    var MAX_ROWS = 4;// max no of rows to show
+
     // string constants
     var REQUIRED_CLASS = 'autocomplete-required';
     var TEXT_SEARCHING = 'Searching...';
@@ -48,23 +51,26 @@
 
     // Set the default template for this directive
     $templateCache.put(TEMPLATE_URL,
-        '<div class="angucomplete-holder" ng-class="{\'angucomplete-dropdown-visible\': showDropdown}">' +
-        '  <input id="{{id}}_value" name="{{inputName}}" ng-class="{\'angucomplete-input-not-empty\': notEmpty}" ng-model="searchStr" ng-disabled="disableInput" type="{{inputType}}" placeholder="{{placeholder}}" maxlength="{{maxlength}}" ng-focus="onFocusHandler()" class="{{inputClass}}" ng-focus="resetHideResults()" ng-blur="hideResults($event)" autocapitalize="off" autocorrect="off" autocomplete="off" ng-change="inputChangeHandler(searchStr)"/>' +
-        '  <div id="{{id}}_dropdown" class="angucomplete-dropdown" ng-show="showDropdown">' +
-        '    <div class="angucomplete-searching" ng-show="searching" ng-bind="textSearching"></div>' +
-        '    <div class="angucomplete-searching" ng-show="!searching && (!results || results.length == 0)" ng-bind="textNoResults"></div>' +
-        '    <div class="angucomplete-row" ng-repeat="result in results" ng-click="selectResult(result)" ng-mouseenter="hoverRow($index)" ng-class="{\'angucomplete-selected-row\': $index == currentIndex}">' +
-        '      <div ng-if="imageField" class="angucomplete-image-holder">' +
-        '        <img ng-if="result.image && result.image != \'\'" ng-src="{{result.image}}" class="angucomplete-image"/>' +
-        '        <div ng-if="!result.image && result.image != \'\'" class="angucomplete-image-default"></div>' +
-        '      </div>' +
-        '      <div class="angucomplete-title" ng-if="matchClass" ng-bind-html="result.title"></div>' +
-        '      <div class="angucomplete-title" ng-if="!matchClass">{{ result.title }}</div>' +
-        '      <div ng-if="matchClass && result.description && result.description != \'\'" class="angucomplete-description" ng-bind-html="result.description"></div>' +
-        '      <div ng-if="!matchClass && result.description && result.description != \'\'" class="angucomplete-description">{{result.description}}</div>' +
-        '    </div>' +
-        '  </div>' +
-        '</div>'
+        '<div class="angucomplete-holder" ng-class="{\'angucomplete-dropdown-visible\': showDropdown}"> ' +
+        '  <input id="{{id}}_value" name="{{inputName}}" ng-class="{\'angucomplete-input-not-empty\': notEmpty}" ng-model="searchStr" ng-disabled="disableInput" type="{{inputType}}" placeholder="{{placeholder}}" maxlength="{{maxlength}}" ng-focus="onFocusHandler()" class="{{inputClass}}" ng-focus="resetHideResults()" ng-blur="hideResults($event)" autocapitalize="off" autocorrect="off" autocomplete="off" ng-change="inputChangeHandler(searchStr)" /> ' +
+        '  <a class="icon ion-ios-close-outline placeholder-icon clear-search-btn" ng-click="clearSearchReslult()"  ng-show="{{enableClearSearchBtn || false}} && (searchStr.length || showDropdown)"></a> ' +
+        '  <div id="{{id}}_dropdown" class="angucomplete-dropdown" ng-show="showDropdown"> ' +
+        '    <div class="angucomplete-searching" ng-show="searching" ng-bind="textSearching"></div> ' +
+        '    <div class="angucomplete-searching" ng-show="!searching && (!results || results.length == 0)" ng-bind="textNoResults"></div> ' +
+        '    <ion-content ng-show="showDropdown" > ' +
+        '    <div class="angucomplete-row" ng-repeat="result in results" ng-click="selectResult(result)" ng-mouseenter="hoverRow($index)" ng-class="{\'angucomplete-selected-row\': $index == currentIndex}"> ' +
+        '      <div ng-if="imageField" class="angucomplete-image-holder"> <img ng-if="result.image && result.image != \'\'" ng-src="{{result.image}}" class="angucomplete-image" /> ' +
+        '        <div ng-if="!result.image && result.image != \'\'" class="angucomplete-image-default"></div> ' +
+        '      </div> ' +
+        '      <div class="angucomplete-title" ng-if="matchClass" ng-bind-html="result.title"></div> ' +
+        '      <div class="angucomplete-title" ng-if="!matchClass">{{ result.title }}</div> ' +
+        '      <div ng-if="matchClass && result.description && result.description != \'\'" class="angucomplete-description" ng-bind-html="result.description"></div> ' +
+        '      <div ng-if="!matchClass && result.description && result.description != \'\'" class="angucomplete-description">{{result.description}}</div> ' +
+        '    </div> ' +
+        '    </ion-content> ' +
+        '  </div> ' +
+        '</div> '
+
     );
 
     function link(scope, elem, attrs, ctrl) {
@@ -116,6 +122,18 @@
           handleRequired(true);
         }
       });
+
+      scope.clearSearchReslult  = function(){
+        if(scope.searchStr && scope.searchStr.length){
+          scope.searchStr = '';
+          $timeout(function() {
+            inputField[0].focus();
+          });
+        }else if(scope.showDropdown) {
+          scope.showDropdown = false;
+        }
+        scope.selectedObject = null;
+      };
 
       scope.$on('angucomplete-alt:clearInput', function (event, elementId) {
         if (!elementId || elementId === scope.id) {
@@ -574,6 +592,14 @@
         } else {
           scope.showDropdown = true;
         }
+
+        var contentHeight = scope.results.length > MAX_ROWS ?
+                            (MAX_ROWS * ROW_HEIGHT) :
+                            (scope.results.length * ROW_HEIGHT);
+        if(displayNoResults && contentHeight < 10){
+          contentHeight = ROW_HEIGHT;
+        }
+        dd.style.height = (contentHeight + 2) + 'px';
       }
 
       function showAll() {
@@ -769,7 +795,8 @@
         autoMatch: '@',
         focusOut: '&',
         focusIn: '&',
-        inputName: '@'
+        inputName: '@',
+        enableClearSearchBtn: '@'
       },
       templateUrl: function(element, attrs) {
         return attrs.templateUrl || TEMPLATE_URL;

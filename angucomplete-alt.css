@@ -65,3 +65,61 @@
     height: 34px;
     width: 34px;
 }
+
+
+/* -------------------------------------------------- modifiedy by manoharpalem -------------------------------------------------- */
+.angucomplete-holder{
+  margin: 5px 0px;    
+  padding-right: 15px;
+  padding-left: 23px;
+  border: 1px solid #ddd;
+  border-radius: 16px;
+}
+
+.angucomplete-holder a{
+  position: relative;
+  top: 5px;
+  right: 8px;
+  font-size: 24px;
+  cursor: pointer;
+  position: absolute;
+}
+
+.angucomplete-holder a:hover{
+    color: #444;
+}
+.angucomplete-holder a:active{
+    color: #0c63ee;
+}
+
+.angucomplete-holder input{
+    width: 90%;
+    padding-right: 40px;
+}
+
+.angucomplete-dropdown{
+  overflow-y: auto;
+  height: 166px;
+  width: 90%;
+  left: 5%;
+  margin-top: 0px;
+}
+
+.angucomplete-dropdown .activated{
+  background-color: #4a87ee;
+  border-color: #145fd7;
+  color:#fff;
+}
+
+.angucomplete-dropdown .angucomplete-row{
+  padding: 10px;
+  border: 1px solid #eee;
+  border-bottom: 0px;
+  margin: 0px;
+  text-align: center;
+}
+
+.angucomplete-selected-row {
+  background-color: #fff;
+  color: #000;
+}
