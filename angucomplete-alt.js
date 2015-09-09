@@ -23,7 +23,7 @@
 }(window, function (angular) {
 
   angular.module('angucomplete-alt', [] )
-    .directive('angucompleteAlt', ['$q', '$parse', '$http', '$sce', '$timeout', '$templateCache', '$interpolate', function ($q, $parse, $http, $sce, $timeout, $templateCache, $interpolate) {
+    .directive('angucompleteAlt', ['$q', '$parse', '$http', '$sce', '$timeout', '$templateCache', '$interpolate', '$ionicScrollDelegate', function ($q, $parse, $http, $sce, $timeout, $templateCache, $interpolate, $ionicScrollDelegate) {
     // keyboard events
     var KEY_DW  = 40;
     var KEY_RT  = 39;
@@ -52,12 +52,12 @@
     // Set the default template for this directive
     $templateCache.put(TEMPLATE_URL,
         '<div class="angucomplete-holder" ng-class="{\'angucomplete-dropdown-visible\': showDropdown}"> ' +
-        '  <input id="{{id}}_value" name="{{inputName}}" ng-class="{\'angucomplete-input-not-empty\': notEmpty}" ng-model="searchStr" ng-disabled="disableInput" type="{{inputType}}" placeholder="{{placeholder}}" maxlength="{{maxlength}}" ng-focus="onFocusHandler()" class="{{inputClass}}" ng-focus="resetHideResults()" ng-blur="hideResults($event)" autocapitalize="off" autocorrect="off" autocomplete="off" ng-change="inputChangeHandler(searchStr)" /> ' +
+        '  <input id="{{id}}_value" name="{{inputName}}" ng-class="{\'angucomplete-input-not-empty\': notEmpty}" ng-model="searchStr" ng-disabled="disableInput" type="{{inputType}}" placeholder="{{placeholder}}" maxlength="{{maxlength}}" ng-focus="onFocusHandler()" class="{{inputClass}}" ng-focus="resetHideResults()" ng-blur="clearOnBlur!=\'false\' && hideResults($event)" autocapitalize="off" autocorrect="off" autocomplete="off" ng-change="inputChangeHandler(searchStr)" /> ' +
         '  <a class="icon ion-ios-close-outline placeholder-icon clear-search-btn" ng-click="clearSearchReslult()"  ng-show="{{enableClearSearchBtn || false}} && (searchStr.length || showDropdown)"></a> ' +
         '  <div id="{{id}}_dropdown" class="angucomplete-dropdown" ng-show="showDropdown"> ' +
         '    <div class="angucomplete-searching" ng-show="searching" ng-bind="textSearching"></div> ' +
         '    <div class="angucomplete-searching" ng-show="!searching && (!results || results.length == 0)" ng-bind="textNoResults"></div> ' +
-        '    <ion-content ng-show="showDropdown" has-bouncing="false"> ' +
+        '    <ion-content ng-show="showDropdown" delegate-handle="{{id}}_Scroll" has-bouncing="true"> ' +
         '    <div class="angucomplete-row" ng-repeat="result in results" ng-click="selectResult(result)" ng-mouseenter="hoverRow($index)" ng-class="{\'angucomplete-selected-row\': $index == currentIndex}"> ' +
         '      <div ng-if="imageField" class="angucomplete-image-holder"> <img ng-if="result.image && result.image != \'\'" ng-src="{{result.image}}" class="angucomplete-image" /> ' +
         '        <div ng-if="!result.image && result.image != \'\'" class="angucomplete-image-default"></div> ' +
@@ -88,6 +88,8 @@
       var unbindInitialValue;
       var displaySearching;
       var displayNoResults;
+      var ionContent = elem[0].querySelector('ion-content');
+      var scrollHandle = $ionicScrollDelegate.$getByHandle(ionContent.getAttribute('delegate-handle'));
 
       elem.on('mousedown', function(event) {
         if (event.target.id) {
@@ -591,6 +593,7 @@
           scope.showDropdown = false;
         } else {
           scope.showDropdown = true;
+          scrollHandle.scrollTo(0, 0);
         }
 
         var contentHeight = scope.results.length > MAX_ROWS ?
@@ -634,14 +637,14 @@
           // this is commented to not close the results dropdown on focus-out 
           // and, should explicity close / select an item from the list
 
-          // hideTimer = $timeout(function() {
-          //   clearResults();
-          //   scope.$apply(function() {
-          //     if (scope.searchStr && scope.searchStr.length > 0) {
-          //       inputField.val(scope.searchStr);
-          //     }
-          //   });
-          // }, BLUR_TIMEOUT);
+          hideTimer = $timeout(function() {
+            clearResults();
+            scope.$apply(function() {
+              if (scope.searchStr && scope.searchStr.length > 0) {
+                inputField.val(scope.searchStr);
+              }
+            });
+          }, BLUR_TIMEOUT);
 
           cancelHttpRequest();
 
@@ -800,7 +803,8 @@
         focusOut: '&',
         focusIn: '&',
         inputName: '@',
-        enableClearSearchBtn: '@'
+        enableClearSearchBtn: '@',
+        clearOnBlur: '@'
       },
       templateUrl: function(element, attrs) {
         return attrs.templateUrl || TEMPLATE_URL;
