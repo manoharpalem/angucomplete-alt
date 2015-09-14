@@ -57,7 +57,7 @@
         '  <div id="{{id}}_dropdown" class="angucomplete-dropdown" ng-show="showDropdown"> ' +
         '    <div class="angucomplete-searching" ng-show="searching" ng-bind="textSearching"></div> ' +
         '    <div class="angucomplete-searching" ng-show="!searching && (!results || results.length == 0)" ng-bind="textNoResults"></div> ' +
-        '    <ion-content ng-show="showDropdown" delegate-handle="{{id}}_Scroll" has-bouncing="true"> ' +
+        '    <ion-content ng-show="showDropdown" delegate-handle="{{id}}_Scroll" has-bouncing="listHasBouncing!=\'false\' && listHasBouncing!=false"> ' +
         '    <div class="angucomplete-row" ng-repeat="result in results" ng-click="selectResult(result)" ng-mouseenter="hoverRow($index)" ng-class="{\'angucomplete-selected-row\': $index == currentIndex}"> ' +
         '      <div ng-if="imageField" class="angucomplete-image-holder"> <img ng-if="result.image && result.image != \'\'" ng-src="{{result.image}}" class="angucomplete-image" /> ' +
         '        <div ng-if="!result.image && result.image != \'\'" class="angucomplete-image-default"></div> ' +
@@ -74,6 +74,7 @@
     );
 
     function link(scope, elem, attrs, ctrl) {
+
       var inputField = elem.find('input');
       var minlength = MIN_LENGTH;
       var searchTimer = null;
@@ -804,7 +805,8 @@
         focusIn: '&',
         inputName: '@',
         enableClearSearchBtn: '@',
-        clearOnBlur: '@'
+        clearOnBlur: '@',
+        listHasBouncing: '@'
       },
       templateUrl: function(element, attrs) {
         return attrs.templateUrl || TEMPLATE_URL;
